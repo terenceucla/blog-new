@@ -2,6 +2,7 @@ package org.example.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.example.dao.dos.Archives;
 import org.example.dao.mapper.ArticleMapper;
 import org.example.dao.mapper.SysUserMapper;
 import org.example.dao.pojo.Article;
@@ -34,14 +35,40 @@ public class ArticleServiceImp implements ArticleService {
         queryWrapper.orderByDesc(Article::getWeight,Article::getCreateDate);
         Page<Article> articlePage = articleMapper.selectPage(page,queryWrapper);
         List<Article> records = articlePage.getRecords();
-        List<ArticleVo> articleVoList = copyList(records);
+        List<ArticleVo> articleVoList = copyList(records,true,true);
         return Result.success(articleVoList);
     }
 
-    private List<ArticleVo> copyList(List<Article> records){
+    @Override
+    public Result hotArticle(int limit) {
+        LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.orderByDesc(Article::getViewCounts);
+        queryWrapper.select(Article::getId,Article::getTitle);
+        queryWrapper.last("limit "+limit);
+        List<Article> articles = articleMapper.selectList(queryWrapper);
+        return Result.success(copyList(articles,false,false));
+    }
+
+    @Override
+    public Result newArticles(int limit) {
+        LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.orderByDesc(Article::getCreateDate);
+        queryWrapper.select(Article::getId,Article::getTitle);
+        queryWrapper.last("limit "+limit);
+        List<Article> articles = articleMapper.selectList(queryWrapper);
+        return Result.success(copyList(articles,false,false));
+    }
+
+    @Override
+    public Result listArchives() {
+        List<Archives> archivesList = articleMapper.listArchives();
+        return Result.success(archivesList);
+    }
+
+    private List<ArticleVo> copyList(List<Article> records,boolean isTag,boolean isAuthor){
         List<ArticleVo> articleVoList = new ArrayList<>();
         for (Article record : records) {
-            articleVoList.add(copy(record,true,true));
+            articleVoList.add(copy(record,isTag,isAuthor));
         }
         return articleVoList;
     }

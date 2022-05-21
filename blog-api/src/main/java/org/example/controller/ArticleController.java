@@ -13,8 +13,20 @@ public class ArticleController {
     private ArticleService articleService;
     @PostMapping
     public Result listArticle(@RequestBody PageParams pageParams){
-        System.out.println("hello");
-      //  return "hello";
         return articleService.listArticle(pageParams);
+    }
+    @PostMapping("hot")
+    public Result hotArticle(){
+        int limit = 5;
+        return articleService.hotArticle(limit);
+    }
+    @PostMapping("new")
+    public Result newArticle(){
+        int limit = 5;
+        return articleService.newArticles(limit);
+    }
+    @PostMapping("listArchives")
+    public Result listArchives(){
+        return articleService.listArchives();
     }
 }
